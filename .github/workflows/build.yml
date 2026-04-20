@@ -10,7 +10,7 @@ jobs:
 
     steps:
       # ─────────────────────────────
-      # Checkout (Master Repo)
+      # Checkout Master Repo
       # ─────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
         run: brew install make xz
 
       # ─────────────────────────────
-      # Theos
+      # Theos Setup
       # ─────────────────────────────
       - name: Setup Theos
         run: |
@@ -31,12 +31,19 @@ jobs:
           echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
 
       # ─────────────────────────────
-      # SDK (FIXED – no duplicate errors)
+      # SDK Setup
       # ─────────────────────────────
-      - name: Setup iOS SDK
+      - name: Setup SDK
         run: |
           rm -rf $HOME/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git $HOME/theos/sdks
+
+      # ─────────────────────────────
+      # PSHeader (WICHTIG – korrekt installiert)
+      # ─────────────────────────────
+      - name: Setup PSHeader
+        run: |
+          git clone https://github.com/Ihaveadream19/PSHeader.git $HOME/theos/include/PSHeader
 
       # ─────────────────────────────
       # Clone Projects
@@ -47,16 +54,12 @@ jobs:
       - name: Clone YTVideoOverlay
         run: git clone https://github.com/Ihaveadream19/YTVideoOverlay.git
 
-      - name: Clone YouTubeHeader
-        run: git clone https://github.com/Ihaveadream19/YouTubeHeader.git
-
       # ─────────────────────────────
       # Build YouPiP
       # ─────────────────────────────
       - name: Build YouPiP dylib
         run: |
           cd YouPiP
-          export THEOS_INCLUDE_PATHS=$PWD/../YouTubeHeader
           make clean
           make
 
@@ -66,7 +69,6 @@ jobs:
       - name: Build YTVideoOverlay dylib
         run: |
           cd YTVideoOverlay
-          export THEOS_INCLUDE_PATHS=$PWD/../YouTubeHeader
           make clean
           make
 
