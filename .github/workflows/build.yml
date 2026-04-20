@@ -39,7 +39,7 @@ jobs:
           git clone --depth 1 https://github.com/theos/sdks.git $HOME/theos/sdks
 
       # ─────────────────────────────
-      # PSHeader fix
+      # PSHeader setup
       # ─────────────────────────────
       - name: Setup PSHeader
         run: |
@@ -48,17 +48,26 @@ jobs:
           cp -R PSHeader/* $THEOS/include/PSHeader/
 
       # ─────────────────────────────
-      # Build tweak
+      # Build tweak (dylib only)
       # ─────────────────────────────
       - name: Build tweak
         run: |
-          make package FINALPACKAGE=1
+          make clean || true
+          make
 
       # ─────────────────────────────
-      # Upload output
+      # Collect dylib
       # ─────────────────────────────
-      - name: Upload package
+      - name: Collect output
+        run: |
+          mkdir -p output
+          find .theos -name "*.dylib" -exec cp {} output/ \;
+
+      # ─────────────────────────────
+      # Upload artifact
+      # ─────────────────────────────
+      - name: Upload dylib
         uses: actions/upload-artifact@v4
         with:
-          name: Return-YouTube-Dislikes
-          path: packages/
+          name: Return-YouTube-Dislikes-dylib
+          path: output/
