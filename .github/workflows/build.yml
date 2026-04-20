@@ -1,4 +1,4 @@
-name: Build YouTube Tweaks
+name: Build YouTube Tweaks (stable)
 
 on:
   workflow_dispatch:
@@ -9,7 +9,16 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Install dependencies
+      # ─────────────────────────────
+      # Checkout (Master Repo)
+      # ─────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ─────────────────────────────
+      # Dependencies
+      # ─────────────────────────────
+      - name: Install tools
         run: brew install make xz
 
       # ─────────────────────────────
@@ -22,14 +31,15 @@ jobs:
           echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
 
       # ─────────────────────────────
-      # SDK
+      # SDK (FIXED – no duplicate errors)
       # ─────────────────────────────
-      - name: Setup SDK
+      - name: Setup iOS SDK
         run: |
-          git clone https://github.com/theos/sdks.git $HOME/theos/sdks
+          rm -rf $HOME/theos/sdks
+          git clone --depth 1 https://github.com/theos/sdks.git $HOME/theos/sdks
 
       # ─────────────────────────────
-      # Clone your projects
+      # Clone Projects
       # ─────────────────────────────
       - name: Clone YouPiP
         run: git clone https://github.com/Ihaveadream19/YouPiP.git
@@ -37,16 +47,13 @@ jobs:
       - name: Clone YTVideoOverlay
         run: git clone https://github.com/Ihaveadream19/YTVideoOverlay.git
 
-      # ─────────────────────────────
-      # Headers (lokal fix)
-      # ─────────────────────────────
       - name: Clone YouTubeHeader
         run: git clone https://github.com/Ihaveadream19/YouTubeHeader.git
 
       # ─────────────────────────────
       # Build YouPiP
       # ─────────────────────────────
-      - name: Build YouPiP
+      - name: Build YouPiP dylib
         run: |
           cd YouPiP
           export THEOS_INCLUDE_PATHS=$PWD/../YouTubeHeader
@@ -56,7 +63,7 @@ jobs:
       # ─────────────────────────────
       # Build YTVideoOverlay
       # ─────────────────────────────
-      - name: Build YTVideoOverlay
+      - name: Build YTVideoOverlay dylib
         run: |
           cd YTVideoOverlay
           export THEOS_INCLUDE_PATHS=$PWD/../YouTubeHeader
@@ -73,10 +80,10 @@ jobs:
           find YTVideoOverlay/.theos -name "*.dylib" -exec cp {} output/ \;
 
       # ─────────────────────────────
-      # Upload
+      # Upload artifacts
       # ─────────────────────────────
       - name: Upload dylibs
         uses: actions/upload-artifact@v4
         with:
-          name: tweaked-dylibs
+          name: YouTubeTweaks-dylibs
           path: output/
