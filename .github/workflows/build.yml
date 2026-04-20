@@ -1,4 +1,4 @@
-name: Build YouTube Tweaks (2 dylibs)
+name: Build YouTube Tweaks (stable dylib build)
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout Master Repo
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
       - name: Install Dependencies
@@ -26,7 +26,7 @@ jobs:
           echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
 
       # ─────────────────────────────
-      # SDK
+      # SDK (stabil)
       # ─────────────────────────────
       - name: Setup iOS SDK
         run: |
@@ -34,30 +34,12 @@ jobs:
           git clone https://github.com/theos/sdks.git $HOME/theos/sdks
 
       # ─────────────────────────────
-      # Dependencies (Headers)
-      # ─────────────────────────────
-      - name: Clone YouTubeHeader
-        run: git clone https://github.com/Ihaveadream19/YouTubeHeader.git
-
-      - name: Clone PSHeader
-        run: git clone https://github.com/PoomSmart/PSHeader.git
-
-      # ─────────────────────────────
-      # Clone Tweaks
-      # ─────────────────────────────
-      - name: Clone YouPiP
-        run: git clone https://github.com/Ihaveadream19/YouPiP.git
-
-      - name: Clone YTVideoOverlay
-        run: git clone https://github.com/Ihaveadream19/YTVideoOverlay.git
-
-      # ─────────────────────────────
       # Build YouPiP
       # ─────────────────────────────
       - name: Build YouPiP dylib
         run: |
           cd YouPiP
-          export THEOS_INCLUDE_PATHS=$PWD/../YouTubeHeader:$PWD/../PSHeader
+          export THEOS_INCLUDE_PATHS=$PWD/../headers
           make clean
           make
 
@@ -67,12 +49,12 @@ jobs:
       - name: Build YTVideoOverlay dylib
         run: |
           cd YTVideoOverlay
-          export THEOS_INCLUDE_PATHS=$PWD/../YouTubeHeader
+          export THEOS_INCLUDE_PATHS=$PWD/../headers
           make clean
           make
 
       # ─────────────────────────────
-      # Collect outputs
+      # Collect dylibs
       # ─────────────────────────────
       - name: Collect dylibs
         run: |
