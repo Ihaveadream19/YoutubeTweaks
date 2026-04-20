@@ -1,4 +1,4 @@
-name: Build YouTube Tweaks (dylib)
+name: Build YouTube Tweaks (2 dylibs)
 
 on:
   workflow_dispatch:
@@ -9,26 +9,41 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout Main Repo
+      - name: Checkout Master Repo
         uses: actions/checkout@v4
 
       - name: Install Dependencies
         run: |
           brew install make xz
 
+      # ─────────────────────────────
+      # Theos Setup
+      # ─────────────────────────────
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git $HOME/theos
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
           echo "PATH=$HOME/theos/bin:$PATH" >> $GITHUB_ENV
 
-      - name: Setup SDK
+      # ─────────────────────────────
+      # SDK
+      # ─────────────────────────────
+      - name: Setup iOS SDK
         run: |
           rm -rf $HOME/theos/sdks
           git clone https://github.com/theos/sdks.git $HOME/theos/sdks
 
       # ─────────────────────────────
-      # Clone deine Forks
+      # Dependencies (Headers)
+      # ─────────────────────────────
+      - name: Clone YouTubeHeader
+        run: git clone https://github.com/Ihaveadream19/YouTubeHeader.git
+
+      - name: Clone PSHeader
+        run: git clone https://github.com/PoomSmart/PSHeader.git
+
+      # ─────────────────────────────
+      # Clone Tweaks
       # ─────────────────────────────
       - name: Clone YouPiP
         run: git clone https://github.com/Ihaveadream19/YouPiP.git
@@ -36,16 +51,13 @@ jobs:
       - name: Clone YTVideoOverlay
         run: git clone https://github.com/Ihaveadream19/YTVideoOverlay.git
 
-      - name: Clone YouTubeHeader
-        run: git clone https://github.com/Ihaveadream19/YouTubeHeader.git
-
       # ─────────────────────────────
       # Build YouPiP
       # ─────────────────────────────
       - name: Build YouPiP dylib
         run: |
           cd YouPiP
-          export THEOS_INCLUDE_PATHS=$PWD/../YouTubeHeader
+          export THEOS_INCLUDE_PATHS=$PWD/../YouTubeHeader:$PWD/../PSHeader
           make clean
           make
 
@@ -60,7 +72,7 @@ jobs:
           make
 
       # ─────────────────────────────
-      # Collect Outputs
+      # Collect outputs
       # ─────────────────────────────
       - name: Collect dylibs
         run: |
@@ -68,6 +80,9 @@ jobs:
           find YouPiP/.theos -name "*.dylib" -exec cp {} output/ \;
           find YTVideoOverlay/.theos -name "*.dylib" -exec cp {} output/ \;
 
+      # ─────────────────────────────
+      # Upload artifacts
+      # ─────────────────────────────
       - name: Upload dylibs
         uses: actions/upload-artifact@v4
         with:
